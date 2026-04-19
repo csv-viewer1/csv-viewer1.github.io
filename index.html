@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Viewer Online | Upload and View CSV Files Instantly</title>
+    
+    <meta name="google-adsense-account" content="ca-pub-4659137717082463">
+
+    <meta name="description" content="Free online CSV viewer. Upload a CSV file and instantly see your spreadsheet data in a clean full-page table directly in your browser.">
+    <meta name="robots" content="index,follow,max-image-preview:large">
+    <meta name="theme-color" content="#f8f9fa">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="CSV Viewer Online | Upload and View CSV Files Instantly">
+    <meta property="og:description" content="Upload a CSV file and instantly preview the data in a clean table layout inside your browser.">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CSV Viewer Online | Upload and View CSV Files Instantly">
+    <meta name="twitter:description" content="Free online CSV viewer for opening and previewing CSV data in a fast table view.">
+    
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --container-bg: #ffffff;
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --accent: #0984e3;
+            --border: #edf2f7;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            background-color: var(--bg);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+            padding: 40px 0;
+        }
+
+        .page-intro {
+            width: min(900px, calc(100vw - 32px));
+            margin: 0 auto 20px;
+            text-align: center;
+        }
+
+        .page-intro h1 {
+            margin: 0 0 10px;
+            font-size: clamp(28px, 4vw, 44px);
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+        }
+
+        .page-intro p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .controls {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            font-size: 14px;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .viewer-container {
+            width: 80vw;
+            height: 60vh;
+            background: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: auto;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 11px;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .info-section {
+            width: min(800px, 80vw);
+            margin-top: 40px;
+            padding: 20px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            text-align: left;
+        }
+
+        .placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <main aria-labelledby="pageTitle">
+        <section class="page-intro">
+            <h1 id="pageTitle">CSV Viewer Online</h1>
+            <p>Upload a CSV file and instantly view your spreadsheet data in a clean, searchable table directly in your browser.</p>
+        </section>
+
+        <div class="controls">
+            <label class="sr-only" for="csvFile">Upload CSV file</label>
+            <input type="file" id="csvFile" accept=".csv,text/csv">
+        </div>
+
+        <div class="viewer-container" id="viewer">
+            <div id="hint" class="placeholder">Upload a CSV file to view data</div>
+            <table id="csvTable" style="display: none;">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <article class="info-section">
+            <h3>Secure Online CSV Viewing</h3>
+            <p>This minimalist tool is built for speed and privacy. Since you are an entrepreneur and developer often handling sensitive data logs or financial records, you'll appreciate that this viewer processes files entirely client-side. Your data never leaves your computer.</p>
+            <p>Simply drag and drop your CSV files to inspect multi-column data instantly. The interface is designed with a "quiet luxury" aesthetic, focusing on high readability and elegant table layouts that won't distract from your workflow.</p>
+        </article>
+    </main>
+
+<script>
+    const csvFile = document.getElementById('csvFile');
+    const tableHead = document.getElementById('tableHead');
+    const tableBody = document.getElementById('tableBody');
+    const csvTable = document.getElementById('csvTable');
+    const hint = document.getElementById('hint');
+
+    csvFile.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const content = e.target.result;
+            const rows = content.split(/\r?\n/).filter(r => r.trim() !== "");
+            
+            hint.style.display = 'none';
+            csvTable.style.display = 'table';
+            renderTable(rows);
+        };
+        reader.readAsText(file);
+    });
+
+    function renderTable(rows) {
+        tableHead.innerHTML = "";
+        tableBody.innerHTML = "";
+        if (rows.length === 0) return;
+        const headers = rows[0].split(',');
+        let headMarkup = '<tr>';
+        headers.forEach(h => headMarkup += `<th>${h.trim().replace(/"/g, '')}</th>`);
+        headMarkup += '</tr>';
+        tableHead.innerHTML = headMarkup;
+        rows.slice(1).forEach(row => {
+            const cols = row.split(',');
+            let rowMarkup = '<tr>';
+            cols.forEach(c => rowMarkup += `<td>${c.trim().replace(/"/g, '')}</td>`);
+            rowMarkup += '</tr>';
+            tableBody.insertAdjacentHTML('beforeend', rowMarkup);
+        });
+    }
+</script>
+</body>
+</html>
